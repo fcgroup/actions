@@ -1,0 +1,56 @@
+name: Validation
+on:
+  workflow_call:
+    inputs:
+      runPreCommit:
+        required: false
+        type: boolean
+        default: true
+      runDefaultLinters:
+        required: false
+        type: boolean
+        default: true
+jobs:
+
+  # -------------------------------------------------------------------------------------------------------------------
+  # RUN PRE-COMMIT VALIDATION
+  # -------------------------------------------------------------------------------------------------------------------
+  pre-commit:
+    name: Pre-Commit
+    runs-on: ubuntu-latest
+    if: inputs.runPreCommit == true
+    steps:
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+      - name: Install pre-commit
+        run: python -m pip install pre-commit
+        shell: bash
+      - name: Freeze python dependencies
+        run: python -m pip freeze --local
+        shell: bash
+      - uses: actions/cache@v3
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit|${{ hashFiles('.pre-commit-config.yaml') }}|${{ env.pythonLocation }}
+      - name: Run pre-commit validation
+        run: pre-commit run --show-diff-on-failure --color=always ${{ inputs.args }}
+        shell: bash
+
+  # -------------------------------------------------------------------------------------------------------------------
+  # RUN DEFAULT LINTERS
+  # -------------------------------------------------------------------------------------------------------------------
+  lint:
+    name: Linters
+    runs-on: ubuntu-latest
+    if: inputs.runDefaultLinters == true
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+      - name: Install node dependencies
+        run: npm ci
+        shell: bash
+      - name: Run lint script
+        run: npm run lint
+        shell: bash

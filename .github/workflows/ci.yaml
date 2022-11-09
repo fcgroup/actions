@@ -1,0 +1,6 @@
+name: Continuous Integration
+on:
+  - push
+jobs:
+  ci:
+    uses: cncsc/actions/workflows/validation.yaml@main

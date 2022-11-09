@@ -1,0 +1,38 @@
+name: Semantic Release
+on:
+  workflow_call:
+    secrets:
+      GIT_TOKEN_BASIC:
+        required: true
+      NPM_ACCESS_TOKEN:
+        required: false
+    outputs:
+      semver:
+        description: The semantic version inferred from the commit history and assigned to the current commit hash.
+        value: ${{ jobs.semantic-release.outputs.semver }}
+jobs:
+  semantic-release:
+    runs-on: ubuntu-latest
+    outputs:
+      semver: ${{ steps.get-semver.outputs.semver }}
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+      - name: Install node dependencies
+        run: npm ci
+        shell: bash
+      - name: Set NPM access token
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_ACCESS_TOKEN }}" > .npmrc
+        shell: bash
+      - name: Run semantic-release
+        run: npx semantic-release --dry-run false --ci false
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN_BASIC }}
+      - id: get-semver
+        name: Read generated semver
+        run: ../scripts/versioning/get-semver.sh
+        shell: bash
+        env:
+          CURRENT_COMMIT_HASH: ${{ github.sha }}
