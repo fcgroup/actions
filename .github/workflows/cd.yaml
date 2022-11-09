@@ -6,7 +6,7 @@ on:
     branches: [main]
 jobs:
   on-success:
-    uses: cncsc/actions/workflows/semantic-release.yaml@main
+    uses: cncsc/actions/.github/workflows/semantic-release.yaml@main
     secrets:
       GIT_TOKEN_BASIC: ${{ secrets.GIT_TOKEN_BASIC }}
       NPM_ACCESS_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}

@@ -3,4 +3,4 @@ on:
   - push
 jobs:
   ci:
-    uses: cncsc/actions/workflows/validation.yaml@main
+    uses: cncsc/actions/.github/workflows/validation.yaml@main
