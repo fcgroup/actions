@@ -5,3 +5,4 @@ jobs:
   ci:
     name: Validation
     uses: cncsc/actions/.github/workflows/validation.yaml@main
+    additionalHomebrewPackages: shellcheck

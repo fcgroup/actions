@@ -23,3 +23,7 @@ repos:
         language: system
         types: [javascript]
         stages: [push]
+  - repo: https://github.com/gruntwork-io/pre-commit
+    rev: v0.0.8
+    hooks:
+      - id: shellcheck
