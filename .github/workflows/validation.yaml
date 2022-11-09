@@ -16,10 +16,13 @@ jobs:
   # RUN PRE-COMMIT VALIDATION
   # -------------------------------------------------------------------------------------------------------------------
   pre-commit:
-    name: Pre-Commit
+    name: Run pre-commit validation
     runs-on: ubuntu-latest
     if: inputs.runPreCommit == true
     steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
       - uses: actions/setup-python@v4
         with:
           python-version: 3.x
@@ -41,10 +44,13 @@ jobs:
   # RUN DEFAULT LINTERS
   # -------------------------------------------------------------------------------------------------------------------
   lint:
-    name: Linters
+    name: Run default linters
     runs-on: ubuntu-latest
     if: inputs.runDefaultLinters == true
     steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
       - uses: actions/setup-node@v3
         with:
           node-version: 16.x
