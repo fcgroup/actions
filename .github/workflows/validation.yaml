@@ -31,6 +31,7 @@ jobs:
         with:
           python-version: 3.x
       - uses: Homebrew/actions/setup-homebrew@master
+        if: inputs.validateTerraform == true
       - name: Install Terraform dependencies
         if: inputs.validateTerraform == true
         run: brew install tflint tfsec
