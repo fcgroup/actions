@@ -32,7 +32,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GIT_TOKEN_BASIC }}
       - id: get-semver
         name: Read generated semver
-        run: ../scripts/versioning/get-semver.sh
+        run: ../../scripts/versioning/get-semver.sh
         shell: bash
         env:
           CURRENT_COMMIT_HASH: ${{ github.sha }}
