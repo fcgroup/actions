@@ -43,4 +43,7 @@ function main() {
   fi
 }
 
+echo "$PWD"
+ls -la
+
 main "$@"
