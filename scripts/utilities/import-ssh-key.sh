@@ -8,6 +8,9 @@ function import_key() {
 
   echo "$ssh_key" > "$destination_path"
   chmod 700 "$destination_path"
+
+  echo "SSH key successfully imported to $destination_path"
+  ls -la "$destination_path"
 }
 
 function import_known_hosts() {
