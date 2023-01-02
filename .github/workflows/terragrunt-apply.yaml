@@ -73,7 +73,7 @@ jobs:
         env:
           CI_BOT_SSH_KEY: ${{ secrets.CI_BOT_SSH_KEY }}
 
-      # TODO: Add auth setup steps for each of the supported backends.
+      # TODO: Add auth setup steps for each of the supported providers.
       # Need to consider how we want to leverage environments for `dev` and `prod`, etc.
 
       - name: Terragrunt apply

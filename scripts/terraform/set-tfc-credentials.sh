@@ -15,8 +15,6 @@ function main() {
 
   echo "Terraform Cloud credentials file saved to $tfrc_file_path"
   ls -la "$tfrc_file_path"
-
-  terraform login -help
 }
 
 main "$@"
