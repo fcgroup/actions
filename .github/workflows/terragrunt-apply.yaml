@@ -14,10 +14,8 @@ on:
     secrets:
       GIT_TOKEN_BASIC:
         required: true
-        type: string
       TFC_ACCESS_TOKEN:
         required: true
-        type: string
 jobs:
   terragrunt-apply:
     runs-on: ubuntu-latest
