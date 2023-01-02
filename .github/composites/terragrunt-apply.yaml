@@ -10,11 +10,14 @@ inputs:
     required: false
     type: string
     default: .*\.(hcl|json|yaml)$
-secrets:
-  GIT_TOKEN_BASIC:
+  githubAccessToken:
+    description: The GitHub PAT used to access GitHub repositories (required to access private repositories, such as stack-modules).
     required: true
-  TFC_ACCESS_TOKEN:
+    type: string
+  terraformCloudAccessToken:
+    description: The access token used to access and interact with remote state/locks stored in Terraform Cloud.
     required: true
+    type: string
 runs:
   using: composite
   steps:
@@ -44,11 +47,11 @@ runs:
       run: ./.actions/scripts/terraform/set-tfc-credentials.sh
       shell: bash
       env:
-        TFC_ACCESS_TOKEN: ${{ secrets.TFC_ACCESS_TOKEN }}
+        TFC_ACCESS_TOKEN: ${{ inputs.terraformCloudAccessToken }}
 
     - name: Terragrunt Apply
       if: steps.verify_files_changed.outputs.files_changed == 'true'
       run: ./.actions/scripts/terraform/run-terragrunt-apply.sh '${{ inputs.baseDirectory }}'
       shell: bash
       env:
-        GITHUB_TOKEN: ${{ secrets.GIT_TOKEN_BASIC }}
+        GITHUB_TOKEN: ${{ inputs.githubAccessToken }}

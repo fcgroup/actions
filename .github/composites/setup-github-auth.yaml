@@ -1,5 +1,5 @@
 name: Setup GitHub Authentication
-secrets:
+inputs:
   GIT_TOKEN_BASIC:
     required: true
 runs:
@@ -9,4 +9,4 @@ runs:
       run: export GITHUB_TOKEN="$GIT_TOKEN_BASIC"
       shell: bash
       env:
-        GIT_TOKEN_BASIC: ${{ secrets.GIT_TOKEN_BASIC }}
+        GIT_TOKEN_BASIC: ${{ inputs.GIT_TOKEN_BASIC }}
