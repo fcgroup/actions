@@ -22,7 +22,7 @@ function main() {
   if [ -z "$changeset" ]; then
     echo "Changeset did not contain any matching files."
     echo ""
-    echo "files_changed=false"
+    echo "files_changed=false" >> "$GITHUB_OUTPUT"
   else
     echo "Changeset contained the following matching files:"
     echo "$changeset"
@@ -38,8 +38,8 @@ function main() {
 
     json_changeset="$(echo "$json_changeset" | jq -r tostring)"
 
-    echo "files_changed=true"
-    echo "changeset='$json_changeset'"
+    echo "files_changed=true" >> "$GITHUB_OUTPUT"
+    echo "changeset='$json_changeset'" >> "$GITHUB_OUTPUT"
   fi
 }
 

@@ -5,7 +5,7 @@ declare SEMVER_FILE_PATH=".semver"
 function output_semver() {
   if [ -s "$SEMVER_FILE_PATH" ]; then
     semver=$(cat "$SEMVER_FILE_PATH")
-    echo "semver=$semver"
+    echo "semver=$semver" >> "$GITHUB_OUTPUT"
     exit 0
   fi
 }

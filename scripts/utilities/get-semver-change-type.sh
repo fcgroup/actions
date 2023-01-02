@@ -26,16 +26,16 @@ function main() {
   # Compare the version
   if [ "$current_major" -gt "$previous_major" ]; then
     echo "Major version was updated"
-    echo "semver_diff=major"
+    echo "semver_diff=major" >> "$GITHUB_OUTPUT"
   elif [ "$current_minor" -gt "$previous_minor" ]; then
     echo "Minor version was updated"
-    echo "semver_diff=minor"
+    echo "semver_diff=minor" >> "$GITHUB_OUTPUT"
   elif [ "$current_patch" -gt "$previous_patch" ]; then
     echo "Patch version was updated"
-    echo "semver_diff=patch"
+    echo "semver_diff=patch" >> "$GITHUB_OUTPUT"
   else
     echo "No change in version"
-    echo "semver_diff=none"
+    echo "semver_diff=none" >> "$GITHUB_OUTPUT"
   fi
 }
 
