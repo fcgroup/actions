@@ -25,6 +25,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
+          # We haven't officially standardized on squash merges, so the number of commits since the last tag is indeterminate.
+          # We'll need to pull the full history until the conversations around squash merges are finalized.
+          fetch-depth: 0 # https://github.com/actions/checkout#fetch-all-history-for-all-tags-and-branches
           submodules: recursive
 
       - uses: actions/checkout@v3
