@@ -14,7 +14,7 @@ on:
     secrets:
       GIT_TOKEN_BASIC:
         required: true
-      TFC_ACCESS_TOKEN:
+      TFC_ACCESS_TOKEN_DEV:
         required: true
       CI_BOT_SSH_KEY:
         required: true
@@ -54,14 +54,14 @@ jobs:
         shell: bash
 
       - name: Set Terraform Cloud credentials
-        if: steps.verify_files_changed.outputs.files_changed == 'true'
+        if: (steps.verify_files_changed.outputs.files_changed == 'true') && (startsWith(matrix.stack, 'github'))
         run: ./.actions/scripts/terraform/set-tfc-credentials.sh
         shell: bash
         env:
-          TFC_ACCESS_TOKEN: ${{ secrets.TFC_ACCESS_TOKEN }}
+          TFC_ACCESS_TOKEN: ${{ secrets.TFC_ACCESS_TOKEN_DEV }}
 
       - name: Set GitHub credentials
-        if: startsWith(matrix.stack, 'github')
+        if: (steps.verify_files_changed.outputs.files_changed == 'true') && (startsWith(matrix.stack, 'github'))
         run: export GITHUB_TOKEN="$GIT_TOKEN_BASIC"
         env:
           GIT_TOKEN_BASIC: ${{ secrets.GIT_TOKEN_BASIC }}
