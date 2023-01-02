@@ -1,0 +1,70 @@
+name: Terragrunt Apply
+on:
+  workflow_call:
+    inputs:
+      stacks:
+        description: A JSON array of base stack directories.
+        required: true
+        type: string
+      changeDetectionExpression:
+        description: The regular expression pattern (passed to `grep -E`) that is used to match applicable files in a changeset.
+        required: false
+        type: string
+        default: .*\.(hcl|json|yaml)$
+    secrets:
+      GIT_TOKEN_BASIC:
+        required: true
+        type: string
+      TFC_ACCESS_TOKEN:
+        required: true
+        type: string
+jobs:
+  terragrunt-apply:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        stack: ${{ fromJson(inputs.stacks) }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: cncsc/actions
+          path: ./.actions/
+
+      - id: verify_files_changed
+        name: Verify Files Changed
+        run: |
+          ./.actions/scripts/utilities/verify-files-changed.sh \
+          '${{ matrix.stack }}' \
+          '${{ inputs.changeDetectionExpression }}'
+        shell: bash
+
+      - uses: Homebrew/actions/setup-homebrew@master
+        if: steps.verify_files_changed.outputs.files_changed == 'true'
+
+      - name: Install Homebrew packages
+        if: steps.verify_files_changed.outputs.files_changed == 'true'
+        run: brew install terragrunt
+        shell: bash
+
+      - name: Set Terraform Cloud credentials
+        if: steps.verify_files_changed.outputs.files_changed == 'true'
+        run: ./.actions/scripts/terraform/set-tfc-credentials.sh
+        shell: bash
+        env:
+          TFC_ACCESS_TOKEN: ${{ secrets.TFC_ACCESS_TOKEN }}
+
+      - name: Set GitHub credentials
+        if: startsWith(matrix.stack, "github")
+        run: export GITHUB_TOKEN="$GIT_TOKEN_BASIC"
+        env:
+          GIT_TOKEN_BASIC: ${{ secrets.GIT_TOKEN_BASIC }}
+
+      # TODO: Add auth setup steps for each of the supported backends.
+      # Need to consider how we want to leverage environments for `dev` and `prod`, etc.
+
+      - name: Terragrunt apply
+        if: steps.verify_files_changed.outputs.files_changed == 'true'
+        run: ./.actions/scripts/terraform/run-terragrunt-apply.sh '${{ matrix.stack }}'
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN_BASIC }}
