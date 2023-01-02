@@ -52,7 +52,7 @@ jobs:
           TFC_ACCESS_TOKEN: ${{ secrets.TFC_ACCESS_TOKEN }}
 
       - name: Set GitHub credentials
-        if: startsWith(matrix.stack, "github")
+        if: startsWith(matrix.stack, 'github')
         run: export GITHUB_TOKEN="$GIT_TOKEN_BASIC"
         env:
           GIT_TOKEN_BASIC: ${{ secrets.GIT_TOKEN_BASIC }}
