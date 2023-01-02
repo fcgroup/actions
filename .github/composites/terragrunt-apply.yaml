@@ -1,0 +1,54 @@
+name: Terragrunt Apply
+inputs:
+  baseDirectory:
+    description: The base directory of the stack being deployed.
+    required: false
+    type: string
+    default: ''
+  changeDetectionExpression:
+    description: The regular expression pattern (passed to `grep -E`) that is used to match applicable files in a changeset.
+    required: false
+    type: string
+    default: .*\.(hcl|json|yaml)$
+secrets:
+  GIT_TOKEN_BASIC:
+    required: true
+  TFC_ACCESS_TOKEN:
+    required: true
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v3
+      with:
+        repository: cncsc/actions
+        path: ./.actions/
+
+    - id: verify_files_changed
+      name: Verify Files Changed
+      run: |
+        ./.actions/scripts/utilities/verify-files-changed.sh \
+        '${{ inputs.baseDirectory }}' \
+        '${{ inputs.changeDetectionExpression }}'
+      shell: bash
+
+    - uses: Homebrew/actions/setup-homebrew@master
+      if: steps.verify_files_changed.outputs.files_changed == 'true'
+
+    - name: Install Homebrew packages
+      if: steps.verify_files_changed.outputs.files_changed == 'true'
+      run: brew install terragrunt
+      shell: bash
+
+    - name: Set Terraform Cloud Credentials
+      if: steps.verify_files_changed.outputs.files_changed == 'true'
+      run: ./.actions/scripts/terraform/set-tfc-credentials.sh
+      shell: bash
+      env:
+        TFC_ACCESS_TOKEN: ${{ secrets.TFC_ACCESS_TOKEN }}
+
+    - name: Terragrunt Apply
+      if: steps.verify_files_changed.outputs.files_changed == 'true'
+      run: ./.actions/scripts/terraform/run-terragrunt-apply.sh '${{ inputs.baseDirectory }}'
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ secrets.GIT_TOKEN_BASIC }}

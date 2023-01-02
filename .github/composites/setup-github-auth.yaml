@@ -1,0 +1,12 @@
+name: Setup GitHub Authentication
+secrets:
+  GIT_TOKEN_BASIC:
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Setup Environment Variable
+      run: export GITHUB_TOKEN="$GIT_TOKEN_BASIC"
+      shell: bash
+      env:
+        GIT_TOKEN_BASIC: ${{ secrets.GIT_TOKEN_BASIC }}
