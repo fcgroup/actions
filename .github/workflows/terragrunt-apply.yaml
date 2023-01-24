@@ -91,3 +91,5 @@ jobs:
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GIT_TOKEN_BASIC }}
+          CI_BOT_GPG_KEY_PASSPHRASE: ${{ secrets.CI_BOT_GPG_KEY_PASSPHRASE }}
+          CI_BOT_GPG_KEY_SUBJECT: ${{ secrets.CI_BOT_GPG_KEY_SUBJECT }}
