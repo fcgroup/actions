@@ -14,8 +14,6 @@ on:
     secrets:
       GIT_TOKEN_BASIC:
         required: true
-      TFC_ACCESS_TOKEN_DEV:
-        required: true
       CI_BOT_SSH_KEY:
         required: true
       CI_BOT_GPG_KEY:
