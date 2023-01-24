@@ -18,6 +18,14 @@ on:
         required: true
       CI_BOT_SSH_KEY:
         required: true
+      CI_BOT_GPG_KEY:
+        required: true
+      CI_BOT_GPG_KEY_ID:
+        required: true
+      CI_BOT_GPG_KEY_PASSPHRASE:
+        required: true
+      CI_BOT_GPG_KEY_SUBJECT:
+        required: true
 jobs:
   terragrunt-apply:
     runs-on: ubuntu-latest
@@ -50,15 +58,8 @@ jobs:
 
       - name: Install Homebrew packages
         if: steps.verify_files_changed.outputs.files_changed == 'true'
-        run: brew install terragrunt
+        run: brew install terragrunt sops
         shell: bash
-
-      - name: Set Terraform Cloud credentials
-        if: (steps.verify_files_changed.outputs.files_changed == 'true') && (startsWith(matrix.stack, 'github'))
-        run: ./.actions/scripts/terraform/set-tfc-credentials.sh
-        shell: bash
-        env:
-          TFC_ACCESS_TOKEN: ${{ secrets.TFC_ACCESS_TOKEN_DEV }}
 
       - name: Set GitHub credentials
         if: (steps.verify_files_changed.outputs.files_changed == 'true') && (startsWith(matrix.stack, 'github'))
@@ -72,6 +73,16 @@ jobs:
         shell: bash
         env:
           CI_BOT_SSH_KEY: ${{ secrets.CI_BOT_SSH_KEY }}
+
+      - name: Import GPG key
+        if: steps.verify_files_changed.outputs.files_changed == 'true'
+        run: ./.actions/scripts/utilities/import-gpg-key.sh
+        shell: bash
+        env:
+          CI_BOT_GPG_KEY: ${{ secrets.CI_BOT_GPG_KEY }}
+          CI_BOT_GPG_KEY_ID: ${{ secrets.CI_BOT_GPG_KEY_ID }}
+          CI_BOT_GPG_KEY_PASSPHRASE: ${{ secrets.CI_BOT_GPG_KEY_PASSPHRASE }}
+          CI_BOT_GPG_KEY_SUBJECT: ${{ secrets.CI_BOT_GPG_KEY_SUBJECT }}
 
       # TODO: Add auth setup steps for each of the supported providers.
       # Need to consider how we want to leverage environments for `dev` and `prod`, etc.
