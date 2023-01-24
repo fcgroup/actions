@@ -16,13 +16,13 @@ on:
         required: true
       CI_BOT_SSH_KEY:
         required: true
-      CI_BOT_GPG_KEY:
+      SOPS_GPG_KEY:
         required: true
-      CI_BOT_GPG_KEY_ID:
+      SOPS_GPG_KEY_ID:
         required: true
-      CI_BOT_GPG_KEY_PASSPHRASE:
+      SOPS_GPG_KEY_PASSPHRASE:
         required: true
-      CI_BOT_GPG_KEY_SUBJECT:
+      SOPS_GPG_KEY_SUBJECT:
         required: true
 jobs:
   terragrunt-apply:
@@ -72,15 +72,16 @@ jobs:
         env:
           CI_BOT_SSH_KEY: ${{ secrets.CI_BOT_SSH_KEY }}
 
-      - name: Import GPG key
+      - name: Import GPG key (sops)
         if: steps.verify_files_changed.outputs.files_changed == 'true'
         run: ./.actions/scripts/utilities/import-gpg-key.sh
         shell: bash
         env:
-          CI_BOT_GPG_KEY: ${{ secrets.CI_BOT_GPG_KEY }}
-          CI_BOT_GPG_KEY_ID: ${{ secrets.CI_BOT_GPG_KEY_ID }}
-          CI_BOT_GPG_KEY_PASSPHRASE: ${{ secrets.CI_BOT_GPG_KEY_PASSPHRASE }}
-          CI_BOT_GPG_KEY_SUBJECT: ${{ secrets.CI_BOT_GPG_KEY_SUBJECT }}
+          IMPORT_GPG_KEY: ${{ secrets.SOPS_GPG_KEY }}
+          IMPORT_GPG_KEY_ID: ${{ secrets.SOPS_GPG_KEY_ID }}
+          IMPORT_GPG_KEY_PASSPHRASE: ${{ secrets.SOPS_GPG_KEY_PASSPHRASE }}
+          IMPORT_GPG_KEY_SUBJECT: ${{ secrets.SOPS_GPG_KEY_SUBJECT }}
+          SET_GIT_GPG_CONFIG: false
 
       # TODO: Add auth setup steps for each of the supported providers.
       # Need to consider how we want to leverage environments for `dev` and `prod`, etc.
@@ -91,5 +92,3 @@ jobs:
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GIT_TOKEN_BASIC }}
-          CI_BOT_GPG_KEY_PASSPHRASE: ${{ secrets.CI_BOT_GPG_KEY_PASSPHRASE }}
-          CI_BOT_GPG_KEY_SUBJECT: ${{ secrets.CI_BOT_GPG_KEY_SUBJECT }}
