@@ -37,6 +37,7 @@ jobs:
           # We'll need to pull the full history until the conversations around squash merges are finalized.
           fetch-depth: 0 # https://github.com/actions/checkout#fetch-all-history-for-all-tags-and-branches
           submodules: recursive
+          token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
 
       - uses: actions/checkout@v3
         with:
