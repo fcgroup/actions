@@ -54,8 +54,12 @@ jobs:
         with:
           repository: cncsc/actions
           path: ./.actions/
+      - name: Install Node dependencies
+        working-directory: ./.actions/scripts/deployment/deploy-files-to-sharepoint/
+        run: npm ci
+        shell: bash
       - name: Deploy files to SharePoint
-        run: node ./.actions/scripts/deployment/deploy-files-to-sharepoint.js
+        run: node ./.actions/scripts/deployment/deploy-files-to-sharepoint/deploy-files-to-sharepoint.js "${{ inputs.siteUrl }}" "${{ inputs.documentLibraryName }}" "${{ inputs.distPath }}" "${{ inputs.basePath }}"
         shell: bash
         env:
           SHAREPOINT_CLIENT_ID: ${{ secrets.SHAREPOINT_CLIENT_ID }}
