@@ -1,0 +1,66 @@
+name: Deploy to SharePoint
+on:
+  workflow_call:
+    inputs:
+      siteUrl:
+        description: The URL of the site to which the files will be deployed.
+        required: true
+        type: string
+      documentLibraryName:
+        description: The name of the document library to which the files will be deployed.
+        required: true
+        type: string
+      basePath:
+        description: The base path within the document library where files will be deployed.
+        required: true
+        type: string
+        default: '/'
+      distPath:
+        description: The path to the build output.
+        required: true
+        type: string
+        default: './dist/'
+      runDefaultBuild:
+        description: Whether or not to run the build script from the project's package.json file.
+        required: false
+        type: boolean
+        default: true
+    secrets:
+      SHAREPOINT_CLIENT_ID:
+        required: true
+      SHAREPOINT_CLIENT_SECRET:
+        required: false
+      GIT_TOKEN_BASIC:
+        required: false
+jobs:
+  deploy-to-sharepoint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+      - name: Install node dependencies
+        run: npm ci
+        shell: bash
+      - name: Run default build
+        if: inputs.runDefaultBuild == true
+        run: npm run build
+        shell: bash
+      - uses: actions/checkout@v3
+        with:
+          repository: cncsc/actions
+          path: ./.actions/
+      - name: Install Node dependencies
+        working-directory: ./.actions/scripts/deployment/deploy-files-to-sharepoint/
+        run: npm ci
+        shell: bash
+      - name: Deploy files to SharePoint
+        run: node ./.actions/scripts/deployment/deploy-files-to-sharepoint/deploy-files-to-sharepoint.js "${{ inputs.siteUrl }}" "${{ inputs.documentLibraryName }}" "${{ inputs.distPath }}" "${{ inputs.basePath }}"
+        shell: bash
+        env:
+          SHAREPOINT_CLIENT_ID: ${{ secrets.SHAREPOINT_CLIENT_ID }}
+          SHAREPOINT_CLIENT_SECRET: ${{ secrets.SHAREPOINT_CLIENT_SECRET }}

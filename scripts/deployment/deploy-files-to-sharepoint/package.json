@@ -1,0 +1,27 @@
+{
+  "name": "@armor/deploy-files-to-sharepoint",
+  "version": "0.0.0-development",
+  "description": "Deploys files to a SharePoint document library.",
+  "main": "deploy-files-to-sharepoint.js",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:cncsc/actions.git",
+    "directory": "scripts/deployment/deploy-files-to-sharepoint"
+  },
+  "author": {
+    "name": "Cloud-Native Cybersecurity Collective",
+    "email": "info@cncsc.io",
+    "url": "https://www.cncsc.io/"
+  },
+  "contributors": [
+    {
+      "name": "Armor Defense Inc.",
+      "email": "info@armor.com",
+      "url": "https://www.armor.com/"
+    }
+  ],
+  "license": "Apache-2.0",
+  "dependencies": {
+    "spsave": "^4.0.2"
+  }
+}
