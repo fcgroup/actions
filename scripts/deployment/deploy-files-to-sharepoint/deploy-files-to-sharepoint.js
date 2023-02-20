@@ -14,14 +14,16 @@ async function main() {
     clientSecret: process.env.SHAREPOINT_CLIENT_SECRET,
   };
 
+  const documentLibraryName = process.argv[3];
   const basePath = process.argv[4];
 
   async function pushFile(filePath, fileName, fileContent) {
     console.log(filePath, fileName, fileContent);
+    console.log(documentLibraryName);
     console.log(basePath);
 
     const fileOptions = {
-      filePath: filePath.replace(basePath, ''),
+      folder: path.join(documentLibraryName, filePath.replace(basePath, '')),
       fileName,
       fileContent
     };
