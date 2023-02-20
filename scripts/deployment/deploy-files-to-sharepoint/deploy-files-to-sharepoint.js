@@ -17,11 +17,17 @@ async function main() {
   const basePath = process.argv[4];
 
   async function pushFile(filePath, fileName, fileContent) {
-    await spsave(coreOptions, credentialOptions, {
+    console.log(filePath, fileName, fileContent);
+
+    const fileOptions = {
       filePath: filePath.replace(new RegExp(`^${ basePath }/`), ''),
       fileName,
       fileContent
-    });
+    };
+
+    console.log(fileOptions);
+
+    await spsave(coreOptions, credentialOptions, fileOptions);
   }
 
   async function processDir(dirPath) {
