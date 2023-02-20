@@ -17,9 +17,13 @@ async function main() {
   const documentLibraryName = process.argv[3];
   const basePath = process.argv[4];
 
+  function stripPathPrefix(filePath) {
+    return filePath.replace(/^\.\//, '');
+  }
+
   async function pushFile(filePath, fileName, fileContent) {
     const fileOptions = {
-      folder: path.join(documentLibraryName, filePath.replace(/^\.\//, '').replace(basePath, '')),
+      folder: path.join(documentLibraryName, stripPathPrefix(filePath).replace(stripPathPrefix(basePath), '')),
       fileName,
       fileContent
     };
