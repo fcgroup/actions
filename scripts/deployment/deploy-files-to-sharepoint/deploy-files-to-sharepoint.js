@@ -18,9 +18,10 @@ async function main() {
 
   async function pushFile(filePath, fileName, fileContent) {
     console.log(filePath, fileName, fileContent);
+    console.log(basePath);
 
     const fileOptions = {
-      filePath: filePath.replace(new RegExp(`^\\.\\/?${ basePath }\\/`), ''),
+      filePath: filePath.replace(basePath, ''),
       fileName,
       fileContent
     };
