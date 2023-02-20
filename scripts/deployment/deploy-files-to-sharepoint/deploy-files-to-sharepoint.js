@@ -20,7 +20,7 @@ async function main() {
     console.log(filePath, fileName, fileContent);
 
     const fileOptions = {
-      filePath: filePath.replace(new RegExp(`^${ basePath }/`), ''),
+      filePath: filePath.replace(new RegExp(`^\\.\\/?${ basePath }\\/`), ''),
       fileName,
       fileContent
     };
