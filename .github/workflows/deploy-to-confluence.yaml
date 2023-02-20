@@ -1,0 +1,50 @@
+name: Deploy to Confluence
+on:
+  workflow_call:
+    inputs:
+      confluenceUrl:
+        description: The URL of the Confluence instance to which the documentation will be deployed.
+        required: true
+        type: string
+      filePattern:
+        description: The glob pattern used to identify which documents should be considered for deployment to Confluence.
+        required: false
+        type: string
+        default: '*.md'
+      markVersion:
+        description: The version of mark to install and use (see https://github.com/kovetskiy/mark/releases).
+        required: false
+        type: string
+        default: '8.7'
+    secrets:
+      CONFLUENCE_API_TOKEN:
+        required: true
+      CONFLUENCE_SERVICE_ACCOUNT:
+        required: false
+      GIT_TOKEN_BASIC:
+        required: false
+jobs:
+  deploy-to-confluence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
+      - uses: actions/checkout@v3
+        with:
+          repository: cncsc/actions
+          path: ./.actions/
+      - name: Install Mark
+        run: |
+          curl -sL "https://github.com/kovetskiy/mark/releases/download/${{ inputs.markVersion }}/mark_${{ inputs.markVersion }}_Linux_x86_64.tar.gz" | tar -xzvf - mark
+          chmod 755 mark
+          mv mark /usr/bin/mark
+        shell: bash
+      - name: Deploy to Confluence
+        run: ./.actions/scripts/deployment/deploy-docs-to-confluence.sh "${{ inputs.filePattern }}"
+        shell: bash
+        env:
+          CONFLUENCE_SERVICE_ACCOUNT: ${{ secrets.CONFLUENCE_SERVICE_ACCOUNT }}
+          CONFLUENCE_API_TOKEN: ${{ secrets.CONFLUENCE_API_TOKEN }}
+          CONFLUENCE_URL: ${{ inputs.confluenceUrl }}
