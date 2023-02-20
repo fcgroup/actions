@@ -18,12 +18,8 @@ async function main() {
   const basePath = process.argv[4];
 
   async function pushFile(filePath, fileName, fileContent) {
-    console.log(filePath, fileName, fileContent);
-    console.log(documentLibraryName);
-    console.log(basePath);
-
     const fileOptions = {
-      folder: path.join(documentLibraryName, filePath.replace(basePath, '')),
+      folder: path.join(documentLibraryName, filePath.replace(/^\.\//, '').replace(basePath, '')),
       fileName,
       fileContent
     };
