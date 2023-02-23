@@ -39,7 +39,7 @@ jobs:
         run: |
           curl -sL "https://github.com/kovetskiy/mark/releases/download/${{ inputs.markVersion }}/mark_${{ inputs.markVersion }}_Linux_x86_64.tar.gz" | tar -xzvf - mark
           chmod 755 mark
-          sudo mv mark /usr/bin/mark
+          mv mark /usr/local/bin/mark
         shell: bash
       - name: Deploy to Confluence
         run: ./.actions/scripts/deployment/deploy-docs-to-confluence.sh "${{ inputs.filePattern }}"
