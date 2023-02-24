@@ -22,6 +22,12 @@ function process_files() {
       continue
     fi
 
+    # Skip any files that are included in this repository (which is checked out to reference scripts like this one).
+    if [[ "$file" == ./.actions/* ]]; then
+      echo "::debug::Skipping $file"
+      continue
+    fi
+
     if ! grep -qP '<!--\s*Space:\s*\S+\s*-->' "$file"; then
       echo "::notice::Skipping $file missing metadata: Space"
       continue
@@ -31,7 +37,7 @@ function process_files() {
       echo "Syncing $file..."
       pushd "$(dirname "$file")" > /dev/null || exit
         filename="$(basename "$file")"
-        mark -k -f "$filename" 2> >(tee "$error_path")
+        mark -k --drop-h1 -f "$filename" 2> >(tee "$error_path")
         exit_status="$?"
         if [ $exit_status -ne 0 ]; then
           cat "$error_path"
