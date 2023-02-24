@@ -16,6 +16,11 @@ on:
         required: false
         type: string
         default: '8.7'
+      runDocsBuild:
+        description: Whether or not the "build:docs" NPM task should be run prior to deploying to Confluence.
+        required: false
+        type: boolean
+        default: false
     secrets:
       CONFLUENCE_API_TOKEN:
         required: true
@@ -31,6 +36,18 @@ jobs:
         with:
           submodules: recursive
           token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
+      - uses: actions/setup-node@v3
+        if: inputs.runDocsBuild == true
+        with:
+          node-version: lts/*
+      - name: Install node dependencies
+        if: inputs.runDocsBuild == true
+        run: npm ci
+        shell: bash
+      - name: Run default build
+        if: inputs.runDocsBuild == true
+        run: npm run build:docs
+        shell: bash
       - uses: actions/checkout@v3
         with:
           repository: cncsc/actions
