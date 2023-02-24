@@ -44,7 +44,7 @@ jobs:
         if: inputs.runDocsBuild == true
         run: npm ci
         shell: bash
-      - name: Run default build
+      - name: Run documentation build
         if: inputs.runDocsBuild == true
         run: npm run build:docs
         shell: bash
