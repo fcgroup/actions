@@ -1,0 +1,76 @@
+name: Update Downstream Submodules
+on:
+  workflow_call:
+    inputs:
+      repositories:
+        description: A JSON array of repositories that reference this repository as a submodule.
+        required: true
+        type: string
+      committerEmail:
+        description: The email address of the account being used to commit the update.
+        required: true
+        type: string
+      committerName:
+        description: The name of the account being used to commit the update.
+        required: true
+        type: string
+    secrets:
+      GIT_TOKEN_BASIC:
+        required: true
+      CI_BOT_SSH_KEY:
+        required: true
+      CI_BOT_GPG_KEY:
+        required: true
+      CI_BOT_GPG_KEY_ID:
+        required: true
+      CI_BOT_GPG_KEY_PASSPHRASE:
+        required: true
+      CI_BOT_GPG_KEY_SUBJECT:
+        required: true
+jobs:
+  update-submodules:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repository: ${{ fromJson(inputs.repositories) }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: ${{ matrix.repository }}
+          submodules: recursive
+          ssh-key: ${{ secrets.CI_BOT_SSH_KEY }}
+
+      - uses: actions/checkout@v3
+        with:
+          repository: cncsc/actions
+          path: ./.actions/
+
+      - name: Import SSH key
+        run: ./.actions/scripts/utilities/import-ssh-key.sh
+        shell: bash
+        env:
+          CI_BOT_SSH_KEY: ${{ secrets.CI_BOT_SSH_KEY }}
+
+      - name: Import GPG key (sops)
+        run: ./.actions/scripts/utilities/import-gpg-key.sh
+        shell: bash
+        env:
+          IMPORT_GPG_KEY: ${{ secrets.CI_BOT_GPG_KEY }}
+          IMPORT_GPG_KEY_ID: ${{ secrets.CI_BOT_GPG_KEY_ID }}
+          IMPORT_GPG_KEY_PASSPHRASE: ${{ secrets.CI_BOT_GPG_KEY_PASSPHRASE }}
+          IMPORT_GPG_KEY_SUBJECT: ${{ secrets.CI_BOT_GPG_KEY_SUBJECT }}
+          SET_GIT_GPG_CONFIG: false
+
+      - name: Configure git identity
+        run: ./.actions/scripts/utilities/config-git-identity.sh "${{ inputs.committerEmail }}" "${{ inputs.committerName }}"
+        shell: bash
+
+      - name: Update Submodule
+        run: |
+          git submodule foreach "$PWD/.actions/scripts/deployment/update-matching-submodule.sh '${{ github.repository }}' '${{ github.sha }}'"
+          rm -rf .actions
+          git status
+          git add -A
+          git commit -m "Update ${{ github.repository }} submodule ref to ${{ github.sha }}"
+          git push
+        shell: bash
