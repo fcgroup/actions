@@ -24,6 +24,10 @@ on:
         required: true
       SOPS_GPG_KEY_SUBJECT:
         required: true
+      AZUREAD_CLIENT_ID:
+        required: false
+      AZUREAD_CLIENT_SECRET:
+        required: false
 jobs:
   terragrunt-apply:
     runs-on: ubuntu-latest
@@ -65,6 +69,15 @@ jobs:
         run: export GITHUB_TOKEN="$GIT_TOKEN_BASIC"
         env:
           GIT_TOKEN_BASIC: ${{ secrets.GIT_TOKEN_BASIC }}
+
+      - name: Set Azure AD credentials
+        if: (steps.verify_files_changed.outputs.files_changed == 'true') && (startsWith(matrix.stack, 'azuread'))
+        run: |
+          export ARM_CLIENT_ID="$AZUREAD_CLIENT_ID"
+          export ARM_CLIENT_SECRET="$AZUREAD_CLIENT_ID"
+        env:
+          AZUREAD_CLIENT_ID: ${{ secrets.AZUREAD_CLIENT_ID }}
+          AZUREAD_CLIENT_SECRET: ${{ secrets.AZUREAD_CLIENT_SECRET }}
 
       - name: Import SSH key
         if: steps.verify_files_changed.outputs.files_changed == 'true'
