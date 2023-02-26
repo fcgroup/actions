@@ -64,21 +64,6 @@ jobs:
         run: brew install terragrunt sops
         shell: bash
 
-      - name: Set GitHub credentials
-        if: (steps.verify_files_changed.outputs.files_changed == 'true') && (startsWith(matrix.stack, 'github'))
-        run: export GITHUB_TOKEN="$GIT_TOKEN_BASIC"
-        env:
-          GIT_TOKEN_BASIC: ${{ secrets.GIT_TOKEN_BASIC }}
-
-      - name: Set Azure AD credentials
-        if: (steps.verify_files_changed.outputs.files_changed == 'true') && (startsWith(matrix.stack, 'azuread'))
-        run: |
-          export ARM_CLIENT_ID="$AZUREAD_CLIENT_ID"
-          export ARM_CLIENT_SECRET="$AZUREAD_CLIENT_ID"
-        env:
-          AZUREAD_CLIENT_ID: ${{ secrets.AZUREAD_CLIENT_ID }}
-          AZUREAD_CLIENT_SECRET: ${{ secrets.AZUREAD_CLIENT_SECRET }}
-
       - name: Import SSH key
         if: steps.verify_files_changed.outputs.files_changed == 'true'
         run: ./.actions/scripts/utilities/import-ssh-key.sh
@@ -106,3 +91,5 @@ jobs:
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GIT_TOKEN_BASIC }}
+          ARM_CLIENT_ID: ${{ secrets.AZUREAD_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZUREAD_CLIENT_SECRET }}
