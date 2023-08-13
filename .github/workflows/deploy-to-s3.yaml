@@ -1,0 +1,67 @@
+name: Deploy to S3 Bucket
+on:
+  workflow_call:
+    inputs:
+      endpointUrl:
+        description: The endpoint URL of the S3 service. Change this when using S3 compatible services other than AWS, or when using account-specific FIPS endpoints.
+        required: true
+        type: string
+        default: 'https://s3.us-east-1.amazonaws.com'
+      bucketName:
+        description: The name of the S3 bucket to which the files will be deployed.
+        required: true
+        type: string
+      region:
+        description: The primary region in which the S3 bucket exists.
+        required: true
+        type: string
+        default: 'us-east-1'
+      distPath:
+        description: The path to the build output.
+        required: true
+        type: string
+        default: './dist/'
+      runDefaultBuild:
+        description: Whether or not to run the build script from the project's package.json file.
+        required: false
+        type: boolean
+        default: true
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      GIT_TOKEN_BASIC:
+        required: false
+jobs:
+  deploy-to-s3:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+      - name: Install node dependencies
+        run: npm ci
+        shell: bash
+      - name: Run default build
+        if: inputs.runDefaultBuild == true
+        run: npm run build
+        shell: bash
+      - uses: actions/checkout@v3
+        with:
+          repository: cncsc/actions
+          path: ./.actions/
+      - name: Install Node dependencies
+        working-directory: ./.actions/scripts/deployment/deploy-files-to-s3/
+        run: npm ci
+        shell: bash
+      - name: Deploy files to S3
+        run: node ./.actions/scripts/deployment/deploy-files-to-s3/deploy-files-to-s3.js "${{ inputs.distPath }}" "${{ inputs.region }}" "${{ inputs.endpointUrl }}" "${{ inputs.bucketName }}"
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
