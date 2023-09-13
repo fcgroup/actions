@@ -5,18 +5,19 @@ function main() {
   local -r base_directory="$1"
   local -r grep_pattern="$2"
   local -r current_hash="$(git rev-parse HEAD)"
-  local -r previous_hash="$(git rev-list --tags --max-count=1)"
-  local -r previous_parent_hash="$(git rev-list --tags --no-merges --max-count=1)"
-  local -r previous_version="$(git describe --abbrev=0 --tags --exact-match "$previous_hash")"
+  # Get the most recent tag, which does not contain HEAD.
+  local -r previous_tag="$(git --no-pager tag --sort='-authordate' --no-contains HEAD | head -n1)"
+  local -r previous_hash="$(git --no-pager tag --sort='-authordate' --no-contains HEAD --format '%(objectname)' | head -n1)"
 
-  echo "Most recent tag was $previous_version at commit $previous_hash"
+  echo "Most recent tag was $previous_tag at commit $previous_hash"
   echo "Complete changeset:"
 
-  git --no-pager diff --name-only "$previous_parent_hash..$current_hash"
+  # This is safe even if previous_tag is an empty string. git-diff will treat previous_tag as HEAD
+  git --no-pager diff --name-only "$previous_tag..$current_hash"
 
   echo ""
   echo "Looking for files in ./${base_directory}/ matching '${grep_pattern}'"
-  changeset="$(git --no-pager diff --name-only "$previous_parent_hash..$current_hash")"
+  changeset="$(git --no-pager diff --name-only "$previous_tag..$current_hash")"
   changeset="$(echo "$changeset" | grep -E "^$base_directory/.*")"
   changeset="$(echo "$changeset" | grep -E "$grep_pattern" || true)"
 
