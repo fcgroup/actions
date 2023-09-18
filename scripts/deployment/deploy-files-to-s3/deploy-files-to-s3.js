@@ -70,10 +70,11 @@ async function main() {
 
   let errorCount = 0;
   const files = await readdir(sourcePath, IGNORED_PATHS);
+  const bareSourcePath = sourcePath.replace(/^\.\//, '');
   console.log(`Uploading ${ files.length } files.`);
   for (const file of files) {
     console.log(`Processing file "${ file }"...`);
-    const key = file.replace(sourcePath, '');
+    const key = file.replace(new RegExp(`^(\.\/)?${ bareSourcePath }(\/)?`), '');
     console.log(`Uploading to s3://${ key }...`);
     const result = await upload(client, bucket, file, key);
     if (!result) {
