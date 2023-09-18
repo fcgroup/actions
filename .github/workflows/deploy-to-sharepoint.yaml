@@ -20,10 +20,6 @@ on:
         required: true
         type: string
         default: './dist/'
-      freshCheckout:
-        required: true
-        type: boolean
-        default: true
       runDefaultBuild:
         description: Whether or not to run the build script from the project's package.json file.
         required: false
@@ -41,7 +37,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        if: inputs.runDefaultBuild == true
         with:
           submodules: recursive
           token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
