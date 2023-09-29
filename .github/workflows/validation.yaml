@@ -17,6 +17,11 @@ on:
         required: false
         type: string
         default: ''
+      additionalPreCommitArgs:
+        description: options to pass to pre-commit run
+        required: false
+        type: string
+        default: '--all-files'
     secrets:
       GIT_TOKEN_BASIC:
         required: false
@@ -62,7 +67,7 @@ jobs:
           key: pre-commit|${{ hashFiles('.pre-commit-config.yaml') }}|${{ env.pythonLocation }}
 
       - name: Run pre-commit validation
-        run: pre-commit run --show-diff-on-failure --color=always ${{ inputs.args }}
+        run: pre-commit run --show-diff-on-failure --color=always ${{ inputs.additionalPreCommitArgs }}
         shell: bash
 
   # -------------------------------------------------------------------------------------------------------------------
