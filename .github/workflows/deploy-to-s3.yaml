@@ -26,6 +26,11 @@ on:
         required: false
         type: boolean
         default: true
+      buildArgs:
+        description: Additional arguments to pass to `npm run build`.
+        required: false
+        type: string
+        default: ''
       useGitLfs:
         description: Whether or not checkout should pull git-lfs files.
         required: false
@@ -55,7 +60,7 @@ jobs:
         shell: bash
       - name: Run default build
         if: inputs.runDefaultBuild == true
-        run: npm run build
+        run: npm run build -- ${{ inputs.buildArgs }}
         shell: bash
       - uses: actions/checkout@v3
         with:
