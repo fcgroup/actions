@@ -26,6 +26,11 @@ on:
         required: false
         type: boolean
         default: true
+      useGitLfs:
+        description: Whether or not checkout should pull git-lfs files.
+        required: false
+        type: boolean
+        default: false
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
@@ -41,6 +46,7 @@ jobs:
         with:
           submodules: recursive
           token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
+          lfs: ${{ inputs.useGitLfs }}
       - uses: actions/setup-node@v3
         with:
           node-version: lts/*
