@@ -12,6 +12,11 @@ on:
         required: false
         type: boolean
         default: true
+      runDefaultTests:
+        description: Whether or not to run the test script from the project's package.json file.
+        required: false
+        type: boolean
+        default: false
       additionalHomebrewPackages:
         description: A space-delimited list of Homebrew packages to install.
         required: false
@@ -93,4 +98,29 @@ jobs:
 
       - name: Run lint script
         run: npm run lint
+        shell: bash
+
+  # -------------------------------------------------------------------------------------------------------------------
+  # RUN DEFAULT TEST SUITES
+  # -------------------------------------------------------------------------------------------------------------------
+  test:
+    name: Run default test suites
+    runs-on: ubuntu-latest
+    if: inputs.runDefaultTests == true
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+
+      - name: Install node dependencies
+        run: npm ci
+        shell: bash
+
+      - name: Run test script
+        run: npm run test
         shell: bash

@@ -19,6 +19,7 @@ jobs:
       runPreCommit: true # optional
       runDefaultLinters: true # optional
       additionalHomebrewPackages: tflint tfsec # optional
+      runDefaultTests: true # optional
 ```
 
 ### Semantic Release Workflow
