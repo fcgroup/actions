@@ -19,7 +19,7 @@ on:
 jobs:
   semantic-release:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment } }
+    environment: ${{ inputs.environment }}
     outputs:
       semver: ${{ steps.get-semver.outputs.semver }}
     steps:
