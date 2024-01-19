@@ -6,6 +6,12 @@ on:
         required: true
       NPM_ACCESS_TOKEN:
         required: false
+    inputs:
+      environment:
+        description: The environment that this job references.
+        required: false
+        type: string
+        default: ''
     outputs:
       semver:
         description: The semantic version inferred from the commit history and assigned to the current commit hash.
@@ -13,6 +19,7 @@ on:
 jobs:
   semantic-release:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
     outputs:
       semver: ${{ steps.get-semver.outputs.semver }}
     steps:
