@@ -1,0 +1,110 @@
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: The environment that this job references. e.g. prod
+        required: false
+        type: string
+        default: ''
+      awsRegion:
+        description: AWS region. e.g. ap-southeast-1
+        required: true
+        type: string
+      iamRoleToAssume:
+        description: IAM role to assume when logging in to AWS. e.g. arn:aws:iam::11111:role/read-only
+        required: false
+        type: string
+        default: ''
+      ecsCluster:
+        description: The name of the ECS service's cluster
+        required: true
+        type: string
+      ecsService:
+        description: The name of the ECS service to update
+        required: true
+        type: string
+      ecsTaskFamily:
+        description: Family of the task. This is available in the JSON of the task definition.
+        required: true
+        type: string
+      ecsNewDockerImage:
+        description: The rull URI of the container image to insert into the ECS task definition.
+        required: true
+        type: string
+      imageRepoName:
+        description: The name of container image to insert into the ECS task definition.
+        required: true
+        type: string
+
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        description: AWS access key ID.
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        description: AWS secret access key.
+        required: true
+      GIT_TOKEN_BASIC:
+        required: true
+
+jobs:
+  update-ecs:
+    name: Update ECS task definition with a new Docker image, and update the ECS service.
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ inputs.awsRegion }}
+          role-to-assume: ${{ inputs.iamRoleToAssume }}
+
+      - name: Download current task definition
+        run: |
+
+          echo "Getting latest task definition"
+          latest_revision=$(aws ecs list-task-definitions --family-prefix ${{ inputs.ecsTaskFamily }} --query 'taskDefinitionArns[0]' --sort DESC --no-paginate | sed 's/.*:\(.*\)"/\1/')
+
+          echo "Registering task definition"
+          aws ecs describe-task-definition --task-definition "${{ inputs.ecsTaskFamily }}:${latest_revision}" --query \
+            'taskDefinition.{
+              family: family,
+              taskRoleArn: taskRoleArn,
+              executionRoleArn: executionRoleArn,
+              networkMode: networkMode,
+              containerDefinitions: containerDefinitions,
+              volumes: volumes,
+              placementConstraints: placementConstraints,
+              requiresCompatibilities: requiresCompatibilities,
+              cpu: cpu,
+              memory: memory,
+              ephemeralStorage: ephemeralStorage,
+              runtimePlatform: runtimePlatform}' > latest-task-definition.json
+
+      - name: Render new task definition
+        id: render-new-task-definition
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: latest-task-definition.json
+          container-name: ${{ inputs.imageRepoName }}
+          image: ${{ inputs.ecsNewDockerImage }}
+
+      - name: Echo new task definition
+        run: |
+
+          echo "Print latest task definition"
+          cat latest-task-definition.json
+          echo ${{ steps.render-new-task-definition.outputs.task-definition }}
+
+      - name: Update ECS service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-new-task-definition.outputs.task-definition }}
+          cluster: ${{ inputs.ecsCluster }}
+          service: ${{ inputs.ecsService }}
