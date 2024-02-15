@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     if: inputs.runPreCommit == true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
           token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
@@ -88,7 +88,7 @@ jobs:
           submodules: recursive
           token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: lts/*
 
@@ -113,7 +113,7 @@ jobs:
           submodules: recursive
           token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: lts/*
 

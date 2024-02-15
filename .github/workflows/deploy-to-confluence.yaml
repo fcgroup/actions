@@ -36,7 +36,7 @@ jobs:
         with:
           submodules: recursive
           token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         if: inputs.runDocsBuild == true
         with:
           node-version: lts/*
