@@ -23,7 +23,7 @@ jobs:
     outputs:
       semver: ${{ steps.get-semver.outputs.semver }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
           token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
@@ -41,7 +41,7 @@ jobs:
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GIT_TOKEN_BASIC }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: cncsc/actions
           path: ./.actions/

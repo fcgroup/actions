@@ -32,7 +32,7 @@ jobs:
   deploy-to-confluence:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
           token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
@@ -48,7 +48,7 @@ jobs:
         if: inputs.runDocsBuild == true
         run: npm run build:docs
         shell: bash
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: cncsc/actions
           path: ./.actions/
