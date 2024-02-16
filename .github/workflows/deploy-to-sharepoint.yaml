@@ -36,11 +36,11 @@ jobs:
   deploy-to-sharepoint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
           token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: lts/*
       - name: Install node dependencies
@@ -50,7 +50,7 @@ jobs:
         if: inputs.runDefaultBuild == true
         run: npm run build
         shell: bash
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: cncsc/actions
           path: ./.actions/
