@@ -36,7 +36,7 @@ on:
         description: AWS secret access key.
         required: true
       GIT_TOKEN_BASIC:
-        required: true
+        required: false
 
 jobs:
   build-and-push-docker-image:
