@@ -35,7 +35,7 @@ jobs:
       matrix:
         stack: ${{ fromJson(inputs.stacks) }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           # We haven't officially standardized on squash merges, so the number of commits since the last tag is indeterminate.
           # We'll need to pull the full history until the conversations around squash merges are finalized.
@@ -43,7 +43,7 @@ jobs:
           submodules: recursive
           token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: cncsc/actions
           path: ./.actions/
