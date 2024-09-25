@@ -15,14 +15,6 @@ repos:
       - id: mixed-line-ending
         args: [--fix=no]
       - id: trailing-whitespace
-  - repo: local
-    hooks:
-      - id: npm-lint-scripts
-        name: run npm lint
-        entry: npm run lint
-        language: system
-        types: [javascript]
-        stages: [push]
   - repo: https://github.com/gruntwork-io/pre-commit
     rev: v0.0.8
     hooks:

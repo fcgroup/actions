@@ -43,7 +43,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GIT_TOKEN_BASIC }}
       - uses: actions/checkout@v4
         with:
-          repository: cncsc/actions
+          repository: fcgroup/actions
           path: ./.actions/
       - id: get-semver
         name: Read generated semver

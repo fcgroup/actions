@@ -1,6 +1,6 @@
 # GitHub Actions Workflows
 
-Reusable GitHub Action workflows for CNCSC and member projects.
+Reusable GitHub Action workflows for FCG projects.
 
 Runs on `ubuntu` and `macos`.
 
@@ -14,7 +14,7 @@ Runs `pre-commit` validation and executes the projects `lint` script from `packa
 jobs:
   ci:
     name: Validation
-    uses: cncsc/actions/.github/workflows/validation.yaml@main
+    uses: fcgroup/actions/.github/workflows/validation.yaml@main
     with:
       runPreCommit: true # optional
       runDefaultLinters: true # optional
@@ -28,7 +28,7 @@ jobs:
 jobs:
   cd:
     name: Release
-    uses: cncsc/actions/.github/workflows/semantic-release.yaml@main
+    uses: fcgroup/actions/.github/workflows/semantic-release.yaml@main
     secrets:
       GIT_TOKEN_BASIC: ${{ secrets.GIT_TOKEN_BASIC }} # required
       NPM_ACCESS_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }} # optional

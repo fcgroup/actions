@@ -1,28 +1,21 @@
 {
-  "name": "@cncsc/actions",
+  "name": "@fcgroup/actions",
   "version": "0.0.0-development",
   "description": "Reusable GitHub Actions workflows and supporting shell scripts.",
   "repository": {
     "type": "git",
-    "url": "git@github.com:cncsc/actions.git"
+    "url": "git@github.com:fcgroup/actions.git"
   },
   "author": {
-    "name": "Cloud-Native Cybersecurity Collective",
-    "email": "info@cncsc.io",
-    "url": "https://www.cncsc.io/"
+    "name": "Bedrock Project",
+    "email": "info@bdrk.dev",
+    "url": "https://bdrk.dev/"
   },
-  "contributors": [
-    {
-      "name": "Armor Defense Inc.",
-      "email": "info@armor.com",
-      "url": "https://www.armor.com/"
-    }
-  ],
   "license": "Apache-2.0",
   "scripts": {
     "lint": "echo 'There are no default linters configured for this project.'"
   },
   "devDependencies": {
-    "@cncsc/semantic-release-config": "^1.0.1"
+    "@bdrk/semantic-release-config": "^3.1.2"
   }
 }

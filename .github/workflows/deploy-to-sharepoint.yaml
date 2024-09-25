@@ -52,7 +52,7 @@ jobs:
         shell: bash
       - uses: actions/checkout@v4
         with:
-          repository: cncsc/actions
+          repository: fcgroup/actions
           path: ./.actions/
       - name: Install Node dependencies
         working-directory: ./.actions/scripts/deployment/deploy-files-to-sharepoint/
