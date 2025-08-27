@@ -12,6 +12,11 @@ on:
         required: false
         type: string
         default: ''
+      runDefaultBuild:
+        description: Whether or not to run the build script from the project's package.json file.
+        required: false
+        type: boolean
+        default: false
     outputs:
       semver:
         description: The semantic version inferred from the commit history and assigned to the current commit hash.
@@ -32,6 +37,10 @@ jobs:
           node-version: lts/*
       - name: Install node dependencies
         run: npm ci
+        shell: bash
+      - name: Run default build
+        if: inputs.runDefaultBuild == true
+        run: npm run build
         shell: bash
       - name: Set NPM access token
         run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_ACCESS_TOKEN }}" > .npmrc
