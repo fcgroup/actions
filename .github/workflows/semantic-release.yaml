@@ -42,9 +42,6 @@ jobs:
         if: inputs.runDefaultBuild == true
         run: npm run build
         shell: bash
-      - name: Set NPM access token
-        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_ACCESS_TOKEN }}" > .npmrc
-        shell: bash
       - name: Run semantic-release
         run: npx semantic-release --dry-run false --ci false
         shell: bash
