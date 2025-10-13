@@ -4,8 +4,6 @@ on:
     secrets:
       GIT_TOKEN_BASIC:
         required: true
-      NPM_ACCESS_TOKEN:
-        required: false
     inputs:
       environment:
         description: The environment that this job references.
