@@ -1,0 +1,74 @@
+name: Nx Publish
+
+on:
+  workflow_call:
+    inputs:
+      git-tag:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+      provenance:
+        type: boolean
+        default: false
+      registry:
+        type: string
+        default: 'https://registry.npmjs.org'
+      packagePaths:
+        description: A JSON array of package paths.
+        required: true
+        type: string
+    secrets:
+      GIT_TOKEN_BASIC:
+        required: true
+
+jobs:
+  nx_publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          ref: ${{ inputs.git-tag }}
+          fetch-depth: 0
+          token: ${{ secrets.GIT_TOKEN_BASIC }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: 'npm'
+          registry-url: ${{ inputs.registry }}
+
+      - name: Install latest NPM
+        run: npm i -g npm@latest && npm --version
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Version with Nx
+        run: npx nx release version ${{ inputs.version }}
+
+      - name: Publish with NPM
+        run: |
+          set -euo pipefail
+          echo '${{ inputs.packagePaths }}' | jq -cr '.[]' | while IFS= read -r package_path; do
+            pushd "$package_path" > /dev/null
+            npm_config_loglevel=verbose npm publish --access public --provenance=${{ inputs.provenance }} --registry=${{ inputs.registry }}
+            popd > /dev/null
+          done
+        env:
+          NODE_AUTH_TOKEN: ''
+          NPM_CONFIG_USERCONFIG: ''
+
+      # - name: Publish with Nx
+      #   run: |
+      #     set -x
+      #     npx nx release publish --yes --publish-args="--provenance=${{ inputs.provenance }} --registry ${{ inputs.registry }}"
+      #   env:
+      #     NODE_AUTH_TOKEN: ''
+      #     NPM_CONFIG_USERCONFIG: ''
+      #     NPM_CONFIG_PROVENANCE: ${{ inputs.provenance }}
+      #     NPM_CONFIG_REGISTRY: ${{ inputs.registry }}

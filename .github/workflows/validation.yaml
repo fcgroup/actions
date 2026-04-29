@@ -17,6 +17,11 @@ on:
         required: false
         type: boolean
         default: false
+      runDefaultBuild:
+        description: Whether or not to run the build script from the project's package.json file.
+        required: false
+        type: boolean
+        default: false
       additionalHomebrewPackages:
         description: A space-delimited list of Homebrew packages to install.
         required: false
@@ -27,8 +32,15 @@ on:
         required: false
         type: string
         default: '--all-files'
+      importSshKey:
+        description: Whether or not to import the CI identity's SSH key (typically used for git module requests).
+        required: false
+        type: boolean
+        default: false
     secrets:
       GIT_TOKEN_BASIC:
+        required: false
+      CI_BOT_SSH_KEY:
         required: false
 jobs:
 
@@ -71,6 +83,26 @@ jobs:
           path: ~/.cache/pre-commit
           key: pre-commit|${{ hashFiles('.pre-commit-config.yaml') }}|${{ env.pythonLocation }}
 
+      - uses: actions/checkout@v4
+        if: inputs.importSshKey == true
+        with:
+          repository: fcgroup/actions
+          path: ./.actions/
+          submodules: recursive
+          token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
+
+      - name: Import SSH Key
+        if: inputs.importSshKey == true
+        run: ./.actions/utilities/import-ssh-key.sh
+        shell: bash
+        env:
+          CI_BOT_SSH_KEY: ${{ secrets.CI_BOT_SSH_KEY }}
+
+      - name: tfenv install
+        if: contains(inputs.additionalHomebrewPackages, 'tfenv')
+        run: tfenv install
+        shell: bash
+
       - name: Run pre-commit validation
         run: pre-commit run --show-diff-on-failure --color=always ${{ inputs.additionalPreCommitArgs }}
         shell: bash
@@ -93,7 +125,7 @@ jobs:
           node-version: lts/*
 
       - name: Install node dependencies
-        run: npm ci
+        run: npm ci || npm install
         shell: bash
 
       - name: Run lint script
@@ -118,9 +150,34 @@ jobs:
           node-version: lts/*
 
       - name: Install node dependencies
-        run: npm ci
+        run: npm ci || npm install
         shell: bash
 
       - name: Run test script
         run: npm run test
+        shell: bash
+
+  # -------------------------------------------------------------------------------------------------------------------
+  # RUN DEFAULT TEST SUITES
+  # -------------------------------------------------------------------------------------------------------------------
+  build:
+    name: Run default build
+    runs-on: ubuntu-latest
+    if: inputs.runDefaultBuild == true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install node dependencies
+        run: npm ci || npm install
+        shell: bash
+
+      - name: Run build script
+        run: npm run build
         shell: bash

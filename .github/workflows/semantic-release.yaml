@@ -10,11 +10,6 @@ on:
         required: false
         type: string
         default: ''
-      runDefaultBuild:
-        description: Whether or not to run the build script from the project's package.json file.
-        required: false
-        type: boolean
-        default: false
     outputs:
       semver:
         description: The semantic version inferred from the commit history and assigned to the current commit hash.
@@ -34,11 +29,7 @@ jobs:
         with:
           node-version: lts/*
       - name: Install node dependencies
-        run: npm ci
-        shell: bash
-      - name: Run default build
-        if: inputs.runDefaultBuild == true
-        run: npm run build
+        run: npm ci || npm install
         shell: bash
       - name: Run semantic-release
         run: npx semantic-release --dry-run false --ci false
@@ -49,9 +40,11 @@ jobs:
         with:
           repository: fcgroup/actions
           path: ./.actions/
+          submodules: recursive
+          token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
       - id: get-semver
         name: Read generated semver
-        run: ./.actions/scripts/versioning/get-semver.sh
+        run: ./.actions/utilities/get-semver.sh
         shell: bash
         env:
           CURRENT_COMMIT_HASH: ${{ github.sha }}

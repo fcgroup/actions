@@ -6,14 +6,11 @@
     "type": "git",
     "url": "git@github.com:fcgroup/actions.git"
   },
-  "author": {
-    "name": "Bedrock Project",
-    "email": "info@bdrk.dev",
-    "url": "https://bdrk.dev/"
-  },
-  "license": "Apache-2.0",
+  "author": "Fritz Consulting Group, Inc.",
+  "license": "MIT",
   "scripts": {
-    "lint": "echo 'There are no default linters configured for this project.'"
+    "lint": "echo 'There are no default linters configured for this project.'",
+    "test": "echo 'There are no tests configured for this project.'"
   },
   "devDependencies": {
     "@bdrk/semantic-release-config": "^3.1.2"

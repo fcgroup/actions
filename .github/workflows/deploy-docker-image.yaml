@@ -1,0 +1,91 @@
+name: Build and Deploy Docker Image
+on:
+  workflow_call:
+    inputs:
+      images:
+        description: A JSON array of image base directories.
+        required: true
+        type: string
+      imageDirectoryPrefix:
+        description: The path prefix of the image directories.
+        required: false
+        type: string
+        default: '.'
+      githubOrg:
+        description: The GitHub organization to which the image belongs.
+        required: true
+        type: string
+      semver:
+        description: The semantic version of the image.
+        required: true
+        type: string
+      downloadBuildArtifacts:
+        description: Whether or not to download build artifacts.
+        required: false
+        type: boolean
+        default: false
+      buildArtifactsPath:
+        description: The path to the build artifacts.
+        required: false
+        type: string
+        default: packages/
+      mergeMultipleArtifactPaths:
+        description: Whether or not to merge multiple artifact paths.
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      GIT_TOKEN_BASIC:
+        required: true
+
+jobs:
+  deployment:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        image: ${{ fromJson(inputs.images) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        if: inputs.downloadBuildArtifacts == true
+        with:
+          name: build-artifacts
+          path: ${{ inputs.buildArtifactsPath }}
+          merge-multiple: ${{ inputs.mergeMultipleArtifactPaths }}
+
+      - name: Build Image
+        run: |
+          VERSION="${{ inputs.semver }}"
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          MINOR=$(echo "$VERSION" | cut -d. -f1-2)
+
+          pushd ${{ inputs.imageDirectoryPrefix }}/${{ matrix.image }}
+            docker build . \
+              --tag "ghcr.io/${{ inputs.githubOrg }}/${{ matrix.image }}:latest" \
+              --tag "ghcr.io/${{ inputs.githubOrg }}/${{ matrix.image }}:$VERSION" \
+              --tag "ghcr.io/${{ inputs.githubOrg }}/${{ matrix.image }}:$MAJOR" \
+              --tag "ghcr.io/${{ inputs.githubOrg }}/${{ matrix.image }}:$MINOR"
+
+            docker push "ghcr.io/${{ inputs.githubOrg }}/${{ matrix.image }}:latest"
+            docker push "ghcr.io/${{ inputs.githubOrg }}/${{ matrix.image }}:$VERSION"
+            docker push "ghcr.io/${{ inputs.githubOrg }}/${{ matrix.image }}:$MAJOR"
+            docker push "ghcr.io/${{ inputs.githubOrg }}/${{ matrix.image }}:$MINOR"
+          popd

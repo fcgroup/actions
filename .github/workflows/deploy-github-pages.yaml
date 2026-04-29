@@ -1,0 +1,62 @@
+name: Deploy to GitHub Pages
+on:
+  workflow_call:
+    inputs:
+      runDefaultBuild:
+        description: Whether or not the "build" NPM task should be run prior to deploying to GitHub Pages.
+        required: false
+        type: boolean
+        default: true
+      customBuildCommand:
+        description: If not using the default build steps, specify the command to run.
+        required: false
+        type: string
+        default: npm run build
+      buildOutputPath:
+        description: The path from which build artifacts should be collected.
+        required: false
+        type: string
+        default: dist/
+    secrets:
+      GIT_TOKEN_BASIC:
+        required: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
+      - uses: actions/setup-node@v4
+        if: inputs.runDefaultBuild == true
+        with:
+          node-version: lts/*
+      - name: Install node dependencies
+        if: inputs.runDefaultBuild == true
+        run: npm ci || npm install
+        shell: bash
+      - name: Run build
+        run: ${{ inputs.customBuildCommand }}
+        shell: bash
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        id: upload
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ inputs.buildOutputPath }}
+
+  deployment:
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.upload.outputs.page_url }}
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

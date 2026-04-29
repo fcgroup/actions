@@ -1,0 +1,64 @@
+name: Terragrunt Apply
+inputs:
+  alwaysRun:
+    description: Whether or not the job should be run regardless of other trigger conditions.
+    required: false
+    type: boolean
+    default: false
+  changeDetectionExpression:
+    description: The regular expression pattern (passed to `grep -E`) that is used to match applicable files in a changeset.
+    required: false
+    type: string
+    default: .*\.(hcl|json|yaml)$
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # https://github.com/actions/checkout#fetch-all-history-for-all-tags-and-branches
+        submodules: recursive
+        token: ${{ env.GIT_TOKEN_BASIC }}
+
+    - uses: actions/checkout@v4
+      with:
+        repository: fcgroup/actions
+        path: ./.actions/
+        submodules: recursive
+        token: ${{ env.GIT_TOKEN_BASIC }}
+
+    - id: verify_files_changed
+      name: Verify Files Changed
+      if: inputs.alwaysRun == 'false'
+      run: |
+        ./.actions/utilities/verify-files-changed.sh \
+        '${{ matrix.stack }}' \
+        '${{ inputs.changeDetectionExpression }}'
+      shell: bash
+
+    - uses: Homebrew/actions/setup-homebrew@master
+      if: steps.verify_files_changed.outputs.files_changed == 'true' || inputs.alwaysRun == 'true'
+
+    - name: Install Homebrew packages
+      if: steps.verify_files_changed.outputs.files_changed == 'true' || inputs.alwaysRun == 'true'
+      run: brew install terragrunt tfenv
+      shell: bash
+
+    - name: Import SSH key
+      if: steps.verify_files_changed.outputs.files_changed == 'true' || inputs.alwaysRun == 'true'
+      run: ./.actions/utilities/import-ssh-key.sh
+      shell: bash
+      env:
+        CI_BOT_SSH_KEY: ${{ env.CI_BOT_SSH_KEY }}
+
+    - name: Import Environment Variables
+      if: steps.verify_files_changed.outputs.files_changed == 'true' || inputs.alwaysRun == 'true'
+      run: echo '${{ env.DYNAMIC_ENV_VARS }}' | jq -r 'to_entries | map("export \(.key)=\(.value|@sh)") | .[]' >> .env
+      shell: bash
+
+    - name: Terragrunt apply
+      if: steps.verify_files_changed.outputs.files_changed == 'true' || inputs.alwaysRun == 'true'
+      run: ./.actions/utilities/deployment/terraform/run-terragrunt-apply.sh '${{ matrix.stack }}'
+      shell: bash
+      env:
+        TF_TOKEN_app_terraform_io: ${{ env.TF_CLOUD_TOKEN }}
+        GITHUB_TOKEN: ${{ env.GIT_TOKEN_BASIC }}

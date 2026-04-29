@@ -1,9 +1,14 @@
 name: Continuous Integration
 on:
-  - push
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '**'
 jobs:
   ci:
     name: Validation
-    uses: fcgroup/actions/.github/workflows/validation.yaml@main
+    uses: ./.github/workflows/validation.yaml
     with:
+      runDefaultLinters: false
       additionalHomebrewPackages: shellcheck

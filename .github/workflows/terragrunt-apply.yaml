@@ -2,94 +2,85 @@ name: Terragrunt Apply
 on:
   workflow_call:
     inputs:
+      environment:
+        description: The target deployment environment.
+        required: true
+        type: string
+        default: production
       stacks:
         description: A JSON array of base stack directories.
         required: true
         type: string
+      alwaysRun:
+        description: Whether or not the job should be run regardless of other trigger conditions.
+        required: false
+        type: boolean
+        default: false
       changeDetectionExpression:
         description: The regular expression pattern (passed to `grep -E`) that is used to match applicable files in a changeset.
         required: false
         type: string
         default: .*\.(hcl|json|yaml)$
+      runsOn:
+        description: The runner to use for the job.
+        required: false
+        type: string
+        default: ubuntu-latest
+      containerImage:
+        description: The container image to use for the job. Currently only supports images in GHCR and will be prefixed with 'ghcr.io/'.
+        required: false
+        type: string
     secrets:
       GIT_TOKEN_BASIC:
         required: true
       CI_BOT_SSH_KEY:
         required: true
-      SOPS_GPG_KEY:
+      TF_CLOUD_TOKEN:
         required: true
-      SOPS_GPG_KEY_ID:
-        required: true
-      SOPS_GPG_KEY_PASSPHRASE:
-        required: true
-      SOPS_GPG_KEY_SUBJECT:
-        required: true
-      AZUREAD_CLIENT_ID:
+      DYNAMIC_ENV_VARS:
+        # Note: this is expected to be a JSON object string that is transcribed to the environment.
         required: false
-      AZUREAD_CLIENT_SECRET:
-        required: false
+
 jobs:
-  terragrunt-apply:
-    runs-on: ubuntu-latest
+  deployment_default:
+    if: ${{ inputs.containerImage == '' }}
+    runs-on: ${{ inputs.runsOn }}
+    environment: ${{ inputs.environment }}
     strategy:
       matrix:
         stack: ${{ fromJson(inputs.stacks) }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Shared steps
+        uses: fcgroup/actions/.github/actions/terragrunt-apply@main
         with:
-          # We haven't officially standardized on squash merges, so the number of commits since the last tag is indeterminate.
-          # We'll need to pull the full history until the conversations around squash merges are finalized.
-          fetch-depth: 0 # https://github.com/actions/checkout#fetch-all-history-for-all-tags-and-branches
-          submodules: recursive
-          token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
-
-      - uses: actions/checkout@v4
-        with:
-          repository: fcgroup/actions
-          path: ./.actions/
-
-      - id: verify_files_changed
-        name: Verify Files Changed
-        run: |
-          ./.actions/scripts/utilities/verify-files-changed.sh \
-          '${{ matrix.stack }}' \
-          '${{ inputs.changeDetectionExpression }}'
-        shell: bash
-
-      - uses: Homebrew/actions/setup-homebrew@master
-        if: steps.verify_files_changed.outputs.files_changed == 'true'
-
-      - name: Install Homebrew packages
-        if: steps.verify_files_changed.outputs.files_changed == 'true'
-        run: brew install terragrunt sops
-        shell: bash
-
-      - name: Import SSH key
-        if: steps.verify_files_changed.outputs.files_changed == 'true'
-        run: ./.actions/scripts/utilities/import-ssh-key.sh
-        shell: bash
+          alwaysRun: ${{ inputs.alwaysRun }}
+          changeDetectionExpression: ${{ inputs.changeDetectionExpression }}
         env:
+          GIT_TOKEN_BASIC: ${{ secrets.GIT_TOKEN_BASIC }}
           CI_BOT_SSH_KEY: ${{ secrets.CI_BOT_SSH_KEY }}
+          TF_CLOUD_TOKEN: ${{ secrets.TF_CLOUD_TOKEN }}
+          DYNAMIC_ENV_VARS: ${{ secrets.DYNAMIC_ENV_VARS }}
 
-      - name: Import GPG key (sops)
-        if: steps.verify_files_changed.outputs.files_changed == 'true'
-        run: ./.actions/scripts/utilities/import-gpg-key.sh
-        shell: bash
+  deployment_containerized:
+    if: ${{ inputs.containerImage != '' }}
+    runs-on: ${{ inputs.runsOn }}
+    container:
+      image: 'ghcr.io/${{ inputs.containerImage }}'
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    environment: ${{ inputs.environment }}
+    strategy:
+      matrix:
+        stack: ${{ fromJson(inputs.stacks) }}
+    steps:
+      - name: Shared steps
+        uses: fcgroup/actions/.github/actions/terragrunt-apply@main
+        with:
+          alwaysRun: ${{ inputs.alwaysRun }}
+          changeDetectionExpression: ${{ inputs.changeDetectionExpression }}
         env:
-          IMPORT_GPG_KEY: ${{ secrets.SOPS_GPG_KEY }}
-          IMPORT_GPG_KEY_ID: ${{ secrets.SOPS_GPG_KEY_ID }}
-          IMPORT_GPG_KEY_PASSPHRASE: ${{ secrets.SOPS_GPG_KEY_PASSPHRASE }}
-          IMPORT_GPG_KEY_SUBJECT: ${{ secrets.SOPS_GPG_KEY_SUBJECT }}
-          SET_GIT_GPG_CONFIG: false
-
-      # TODO: Add auth setup steps for each of the supported providers.
-      # Need to consider how we want to leverage environments for `dev` and `prod`, etc.
-
-      - name: Terragrunt apply
-        if: steps.verify_files_changed.outputs.files_changed == 'true'
-        run: ./.actions/scripts/terraform/run-terragrunt-apply.sh '${{ matrix.stack }}'
-        shell: bash
-        env:
-          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN_BASIC }}
-          ARM_CLIENT_ID: ${{ secrets.AZUREAD_CLIENT_ID }}
-          ARM_CLIENT_SECRET: ${{ secrets.AZUREAD_CLIENT_SECRET }}
+          GIT_TOKEN_BASIC: ${{ secrets.GIT_TOKEN_BASIC }}
+          CI_BOT_SSH_KEY: ${{ secrets.CI_BOT_SSH_KEY }}
+          TF_CLOUD_TOKEN: ${{ secrets.TF_CLOUD_TOKEN }}
+          DYNAMIC_ENV_VARS: ${{ secrets.DYNAMIC_ENV_VARS }}
