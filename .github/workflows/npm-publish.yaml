@@ -12,13 +12,6 @@ on:
       provenance:
         type: boolean
         default: false
-      registry:
-        type: string
-        default: 'https://registry.npmjs.org'
-      packagePaths:
-        description: A JSON array of package paths.
-        required: true
-        type: string
     secrets:
       GIT_TOKEN_BASIC:
         required: true
@@ -40,7 +33,6 @@ jobs:
         with:
           node-version: lts/*
           cache: 'npm'
-          registry-url: ${{ inputs.registry }}
 
       - name: Install latest NPM
         run: npm i -g npm@latest && npm --version
@@ -48,17 +40,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Version with Nx
-        run: npx nx release version ${{ inputs.version }}
+      - name: Set Package Version
+        run: npm version "${{ inputs.version }}" --no-git-tag-version
 
       - name: Publish with NPM
-        run: |
-          set -euo pipefail
-          echo '${{ inputs.packagePaths }}' | jq -cr '.[]' | while IFS= read -r package_path; do
-            pushd "$package_path" > /dev/null
-            npm_config_loglevel=verbose npm publish --access public --provenance=${{ inputs.provenance }} --registry=${{ inputs.registry }}
-            popd > /dev/null
-          done
+        run: npm publish --access public --provenance=${{ inputs.provenance }}
         env:
           # These are intentionally left blank to leverage the trusted publisher relationship between the GitHub Action and NPM.
           NODE_AUTH_TOKEN: ''
