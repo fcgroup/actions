@@ -52,12 +52,12 @@ jobs:
     runs-on: ubuntu-latest
     if: inputs.runPreCommit == true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
           token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: 3.x
 
@@ -78,12 +78,12 @@ jobs:
         run: python -m pip freeze --local
         shell: bash
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v6
         with:
           path: ~/.cache/pre-commit
           key: pre-commit|${{ hashFiles('.pre-commit-config.yaml') }}|${{ env.pythonLocation }}
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         if: inputs.importSshKey == true
         with:
           repository: fcgroup/actions
@@ -115,14 +115,15 @@ jobs:
     runs-on: ubuntu-latest
     if: inputs.runDefaultLinters == true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
           token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
+          package-manager-cache: false
 
       - name: Install node dependencies
         run: npm ci || npm install
@@ -140,14 +141,15 @@ jobs:
     runs-on: ubuntu-latest
     if: inputs.runDefaultTests == true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
           token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
+          package-manager-cache: false
 
       - name: Install node dependencies
         run: npm ci || npm install
@@ -165,14 +167,15 @@ jobs:
     runs-on: ubuntu-latest
     if: inputs.runDefaultBuild == true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
           token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
+          package-manager-cache: false
 
       - name: Install node dependencies
         run: npm ci || npm install

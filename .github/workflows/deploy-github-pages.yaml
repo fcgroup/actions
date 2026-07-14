@@ -24,14 +24,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
           token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         if: inputs.runDefaultBuild == true
         with:
           node-version: lts/*
+          package-manager-cache: false
       - name: Install node dependencies
         if: inputs.runDefaultBuild == true
         run: npm ci || npm install
@@ -40,12 +41,14 @@ jobs:
         run: ${{ inputs.customBuildCommand }}
         shell: bash
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - name: Upload artifact
         id: upload
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ${{ inputs.buildOutputPath }}
+          # Hidden files were included by default in v3 of this action; preserve that behavior.
+          include-hidden-files: true
 
   deployment:
     runs-on: ubuntu-latest
@@ -59,4 +62,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

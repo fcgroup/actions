@@ -32,14 +32,15 @@ jobs:
   deploy-to-confluence:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
           token: ${{ secrets.GIT_TOKEN_BASIC || github.token }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         if: inputs.runDocsBuild == true
         with:
           node-version: lts/*
+          package-manager-cache: false
       - name: Install node dependencies
         if: inputs.runDocsBuild == true
         run: npm ci
@@ -48,7 +49,7 @@ jobs:
         if: inputs.runDocsBuild == true
         run: npm run build:docs
         shell: bash
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: fcgroup/actions
           path: ./.actions/

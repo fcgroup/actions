@@ -13,13 +13,13 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0 # https://github.com/actions/checkout#fetch-all-history-for-all-tags-and-branches
         submodules: recursive
         token: ${{ env.GIT_TOKEN_BASIC }}
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         repository: fcgroup/actions
         path: ./.actions/
